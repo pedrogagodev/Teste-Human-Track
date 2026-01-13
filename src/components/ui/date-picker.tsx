@@ -11,12 +11,19 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-function formatDate(date: Date | undefined) {
-	if (!date) {
+function ensureDate(date: Date | string | undefined): Date | undefined {
+	if (!date) return undefined;
+	if (date instanceof Date) return date;
+	const parsed = new Date(date);
+	return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+function formatDate(date: Date | string | undefined) {
+	const normalizedDate = ensureDate(date);
+	if (!normalizedDate) {
 		return "";
 	}
-
-	return date.toLocaleDateString("pt-BR", {
+	return normalizedDate.toLocaleDateString("pt-BR", {
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
@@ -60,7 +67,7 @@ function startOfDay(date: Date): Date {
 
 interface DatePickerProps {
 	id: string;
-	value?: Date;
+	value?: Date | string;
 	onChange?: (date: Date | undefined) => void;
 	onBlur?: () => void;
 	placeholder?: string;
@@ -82,7 +89,9 @@ export function DatePicker({
 	name,
 }: DatePickerProps) {
 	const [open, setOpen] = React.useState(false);
-	const [month, setMonth] = React.useState<Date | undefined>(value ?? minDate);
+	const [month, setMonth] = React.useState<Date | undefined>(
+		ensureDate(value) ?? minDate,
+	);
 	const [inputValue, setInputValue] = React.useState(formatDate(value));
 	const [isFocused, setIsFocused] = React.useState(false);
 
@@ -90,7 +99,7 @@ export function DatePicker({
 		if (!isFocused) {
 			setInputValue(formatDate(value));
 		}
-		setMonth(value ?? minDate);
+		setMonth(ensureDate(value) ?? minDate);
 	}, [value, minDate, isFocused]);
 
 	const handleCalendarSelect = (selectedDate: Date | undefined) => {
@@ -142,7 +151,7 @@ export function DatePicker({
 				>
 					<Calendar
 						mode="single"
-						selected={value}
+						selected={ensureDate(value)}
 						captionLayout="dropdown"
 						month={month}
 						onMonthChange={setMonth}
