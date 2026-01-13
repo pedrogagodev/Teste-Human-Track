@@ -1,9 +1,9 @@
 import {
 	type Control,
 	Controller,
-	type UseFormGetValues,
 	type UseFormTrigger,
 	useFormState,
+	useWatch,
 } from "react-hook-form";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -12,16 +12,13 @@ import type { GASFormData } from "@/features/gas/schemas/new-gas";
 interface GASDateFieldsProps {
 	control: Control<GASFormData>;
 	trigger: UseFormTrigger<GASFormData>;
-	getValues: UseFormGetValues<GASFormData>;
 }
 
-export function GASDateFields({
-	control,
-	trigger,
-	getValues,
-}: GASDateFieldsProps) {
+export function GASDateFields({ control, trigger }: GASDateFieldsProps) {
 	const { errors } = useFormState({ control });
+	const startDate = useWatch({ control, name: "startDate" });
 	const today = new Date();
+
 	return (
 		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			<Controller
@@ -38,18 +35,9 @@ export function GASDateFields({
 								value={field.value}
 								onChange={(date) => {
 									field.onChange(date);
-									trigger("startDate");
-									if (getValues().endDate) {
-										trigger("endDate");
-									}
+									trigger(["startDate", "endDate"]);
 								}}
-								onBlur={() => {
-									field.onBlur();
-									trigger("startDate");
-									if (getValues().endDate) {
-										trigger("endDate");
-									}
-								}}
+								onBlur={field.onBlur}
 								placeholder="Ex: 06/01/2026"
 								minDate={today}
 								aria-invalid={hasError}
@@ -63,7 +51,6 @@ export function GASDateFields({
 				name="endDate"
 				control={control}
 				render={({ field }) => {
-					const startDate = getValues().startDate;
 					const hasError = !!errors.endDate;
 					return (
 						<Field data-invalid={hasError}>
@@ -74,12 +61,9 @@ export function GASDateFields({
 								value={field.value}
 								onChange={(date) => {
 									field.onChange(date);
-									trigger("endDate");
+									trigger(["startDate", "endDate"]);
 								}}
-								onBlur={() => {
-									field.onBlur();
-									trigger("endDate");
-								}}
+								onBlur={field.onBlur}
 								placeholder="Ex: 06/01/2027"
 								minDate={startDate ?? today}
 								aria-invalid={hasError}

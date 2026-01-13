@@ -67,11 +67,7 @@ export function GASDetailsSection({
 			<Card>
 				<CardContent className="flex flex-col gap-6">
 					<GASNameField control={control} />
-					<GASDateFields
-						control={control}
-						trigger={trigger}
-						getValues={getValues}
-					/>
+					<GASDateFields control={control} trigger={trigger} />
 					<GASProblemsField control={control} />
 					<GASGoalsField control={control} />
 					<AIHelpBanner
